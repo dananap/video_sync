@@ -1,11 +1,15 @@
 // Bring in Phoenix channels client library:
 import { Socket } from "phoenix"
 import videojs from '../vendor/video.js/video';
+import { debounce } from "./util";
 
+const videoForm = document.getElementById('videoForm');
 let socket = new Socket("/socket", { params: { token: window.userToken } })
+let userInitiatedAction = true;
 
 const player = videojs('videoPlayer', {
-  fluid: true
+  fluid: true,
+  preload: 'auto'
 });
 
 socket.connect()
@@ -18,7 +22,6 @@ channel.join()
   .receive("ok", resp => { console.log("Joined successfully", resp) })
   .receive("error", resp => { console.log("Unable to join", resp) })
 
-const videoForm = document.getElementById('videoForm');
 
 videoForm.addEventListener('submit', event => {
   event.preventDefault();
@@ -27,10 +30,10 @@ videoForm.addEventListener('submit', event => {
 });
 channel.on('init', ({ url, playing, time }) => {
   player.src(url);
+  player.currentTime(time);
   if (playing) {
     player.play();
   }
-  player.currentTime(time);
 });
 
 channel.on('add_video', ({ url }) => {
@@ -38,26 +41,33 @@ channel.on('add_video', ({ url }) => {
 });
 
 channel.on('play', () => {
+  userInitiatedAction = false;
   player.play();
 });
 
 channel.on('pause', () => {
+  userInitiatedAction = false;
   player.pause();
 });
 
 channel.on('timeupdate', ({ time }) => {
-  if( Math.abs(player.currentTime() - time) > 1 ) {
+  if (Math.abs(player.currentTime() - time) > 1) {
     player.currentTime(time);
   }
 });
 
-player.on('play', () => {
-  channel.push('play', {});
+const pushPlay = debounce(() => channel.push('play', {}), 100);
+const pushPause = debounce(() => channel.push('pause', {}), 100);
+player.on('play', (e) => {
+  console.log('play', e);
+  pushPlay();
 });
 
-player.on('pause', () => {
-  channel.push('pause', {});
+player.on('pause', (e) => {
+  console.log('pause', e);
+  pushPause();
 });
+
 
 player.on('timeupdate', () => {
   channel.push('timeupdate', { time: player.currentTime() });
