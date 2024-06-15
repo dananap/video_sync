@@ -4,7 +4,7 @@ defmodule VideoSync.Room do
 
   schema "room" do
     field :time, :float, default: 0.0
-    field :url, :string
+    field :url, :string, default: ""
     field :playing, :boolean, default: false
 
     timestamps(type: :utc_datetime)
@@ -14,6 +14,6 @@ defmodule VideoSync.Room do
   def changeset(room, attrs) do
     room
     |> cast(attrs, [:url, :playing, :time])
-    |> validate_required([:url, :playing, :time])
+    |> validate_required([:playing, :time])
   end
 end

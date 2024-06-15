@@ -67,6 +67,14 @@ defmodule VideoSyncWeb.RoomChannel do
     {:noreply, socket}
   end
 
+  @impl true
+  def handle_in("seek", %{"time" => time}, socket) do
+    broadcast!(socket, "seek", %{time: time})
+    socket = assign(socket, time: time)
+    save_video_state(socket.topic, socket.assigns)
+    {:noreply, socket}
+  end
+
   # Add authorization logic here as required.
   defp authorized?(_payload) do
     true
