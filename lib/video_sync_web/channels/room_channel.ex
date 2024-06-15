@@ -10,6 +10,15 @@ defmodule VideoSyncWeb.RoomChannel do
     end
   end
 
+  @impl true
+  def join("room:" <> _room_id, payload, socket) do
+    if authorized?(payload) do
+      {:ok, socket}
+    else
+      {:error, %{reason: "unauthorized"}}
+    end
+  end
+
   # Channels can be used in a request/response fashion
   # by sending replies to requests from the client
   @impl true
