@@ -1,12 +1,7 @@
 defmodule VideoSyncWeb.RoomChannel do
+  alias VideoSync.Repo
   use VideoSyncWeb, :channel
 
-  @ets_table :video_state_table
-
-  def init(state) do
-    :ets.new(@ets_table, [:named_table, :public, read_concurrency: true, write_concurrency: true])
-    {:ok, state}
-  end
 
   @impl true
   def join("room:lobby", payload, socket) do
@@ -21,7 +16,7 @@ defmodule VideoSyncWeb.RoomChannel do
   def join("room:" <> room_id, payload, socket) do
     if authorized?(payload) do
       video_state = get_video_state(room_id)
-      socket = assign(socket, video_state)
+      socket = assign(socket, %{url: video_state.url, playing: video_state.playing, time: video_state.time})
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
@@ -31,7 +26,7 @@ defmodule VideoSyncWeb.RoomChannel do
   @impl true
   def handle_in("add_video", %{"url" => url}, socket) do
     broadcast!(socket, "add_video", %{url: url})
-    socket = assign(socket, video_url: url, playing: false, time: 0)
+    socket = assign(socket, url: url, playing: false, time: 0)
     save_video_state(socket.topic, socket.assigns)
     {:noreply, socket}
   end
@@ -69,13 +64,16 @@ defmodule VideoSyncWeb.RoomChannel do
   end
 
   defp get_video_state(room_id) do
-    case :ets.lookup(@ets_table, room_id) do
-      [{^room_id, video_state}] -> video_state
-      [] -> %{video_url: nil, playing: false, time: 0}
+    unless Repo.exists?(VideoSync.Room, id: room_id) do
+      VideoSync.Room.changeset(%VideoSync.Room{}, %{id: room_id, url: "", playing: false, time: 0})
+      |> Repo.insert!()
     end
+
+    Repo.one!(VideoSync.Room, where: %{id: room_id})
   end
 
   defp save_video_state(topic, state) do
-    :ets.insert(@ets_table, {topic, state})
+    VideoSync.Room.changeset(get_video_state(topic), state)
+    |> Repo.update!()
   end
 end
