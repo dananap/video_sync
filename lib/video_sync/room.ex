@@ -3,7 +3,7 @@ defmodule VideoSync.Room do
   import Ecto.Changeset
 
   schema "room" do
-    field :time, :float
+    field :time, :float, default: 0.0
     field :url, :string
     field :playing, :boolean, default: false
 
