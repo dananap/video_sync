@@ -4,7 +4,7 @@ defmodule VideoSync.Room do
 
   schema "room" do
     field :time, :float, default: 0.0
-    field :url, :string, default: ""
+    field :url, :string, default: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
     field :playing, :boolean, default: false
 
     timestamps(type: :utc_datetime)
