@@ -13,7 +13,7 @@ kill_signal = 'SIGTERM'
   release_command = '/app/bin/migrate'
 
 [env]
-  PHX_HOST = 'yan-yaochi.fly.dev'
+  PHX_HOST = 'yc.xiaoxiang.online'
   PORT = '8080'
 
 [http_service]
