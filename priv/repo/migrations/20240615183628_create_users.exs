@@ -5,7 +5,6 @@ defmodule VideoSync.Repo.Migrations.CreateUsers do
     create table(:users) do
       add :name, :string
       add :ip, :string
-      add :room_id, :integer
 
       timestamps(type: :utc_datetime)
     end

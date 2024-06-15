@@ -6,6 +6,7 @@ defmodule VideoSync.Room do
     field :time, :float, default: 0.0
     field :url, :string, default: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_fmp4/master.m3u8"
     field :playing, :boolean, default: false
+    has_many :users, VideoSync.User
 
     timestamps(type: :utc_datetime)
   end
