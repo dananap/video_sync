@@ -17,7 +17,8 @@ defmodule VideoSyncWeb.Endpoint do
 
   socket "/socket", VideoSyncWeb.UserSocket,
     websocket: true,
-    longpoll: false
+    longpoll: false,
+    check_origin: ["//localhost:4000", "//*.xiaoxiang.online"]
 
   # Serve at "/" the static files from "priv/static" directory.
   #
