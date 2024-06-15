@@ -25,6 +25,13 @@ videoForm.addEventListener('submit', event => {
   const url = document.getElementById('videoUrl').value;
   channel.push('add_video', { url });
 });
+channel.on('init', ({ url, playing, time }) => {
+  player.src(url);
+  if (playing) {
+    player.play();
+  }
+  player.currentTime(time);
+});
 
 channel.on('add_video', ({ url }) => {
   player.src(url);

@@ -17,10 +17,19 @@ defmodule VideoSyncWeb.RoomChannel do
     if authorized?(payload) do
       video_state = get_video_state(room_id)
       socket = assign(socket, %{url: video_state.url, playing: video_state.playing, time: video_state.time})
+
+      send(self(), :after_join)
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
+  end
+
+  @impl true
+  def handle_info(:after_join, socket) do
+    push(socket, "init", %{url: socket.assigns.url, playing: socket.assigns.playing, time: socket.assigns.time})
+
+    {:noreply, socket}
   end
 
   @impl true
