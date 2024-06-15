@@ -1,6 +1,13 @@
 defmodule VideoSyncWeb.RoomChannel do
   use VideoSyncWeb, :channel
 
+  @ets_table :video_state_table
+
+  def init(state) do
+    :ets.new(@ets_table, [:named_table, :public, read_concurrency: true, write_concurrency: true])
+    {:ok, state}
+  end
+
   @impl true
   def join("room:lobby", payload, socket) do
     if authorized?(payload) do
@@ -11,42 +18,64 @@ defmodule VideoSyncWeb.RoomChannel do
   end
 
   @impl true
-  def join("room:" <> _room_id, payload, socket) do
+  def join("room:" <> room_id, payload, socket) do
     if authorized?(payload) do
+      video_state = get_video_state(room_id)
+      socket = assign(socket, video_state)
       {:ok, socket}
     else
       {:error, %{reason: "unauthorized"}}
     end
   end
 
-  # Channels can be used in a request/response fashion
-  # by sending replies to requests from the client
   @impl true
-  def handle_in("play", _, socket) do
-    broadcast!(socket, "play", %{time: socket.assigns.time})
-    {:noreply, assign(socket, :playing, true)}
+  def handle_in("add_video", %{"url" => url}, socket) do
+    broadcast!(socket, "add_video", %{url: url})
+    socket = assign(socket, video_url: url, playing: false, time: 0)
+    save_video_state(socket.topic, socket.assigns)
+    {:noreply, socket}
   end
 
   @impl true
-  def handle_in("pause", _, socket) do
-    broadcast!(socket, "pause", %{time: socket.assigns.time})
-    {:noreply, assign(socket, :playing, false)}
+  def handle_in("play", _params, socket) do
+    broadcast!(socket, "play", %{})
+    socket = assign(socket, playing: true)
+    save_video_state(socket.topic, socket.assigns)
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_in("pause", _params, socket) do
+    broadcast!(socket, "pause", %{})
+    socket = assign(socket, playing: false)
+    save_video_state(socket.topic, socket.assigns)
+    {:noreply, socket}
   end
 
   @impl true
   def handle_in("timeupdate", %{"time" => time}, socket) do
-    broadcast!(socket, "timeupdate", %{time: time})
-    {:noreply, assign(socket, :time, time)}
-  end
+    if abs(time - get_video_state(socket.topic).time) > 1 do
+      broadcast!(socket, "timeupdate", %{time: time})
+      socket = assign(socket, time: time)
+      save_video_state(socket.topic, socket.assigns)
+    end
 
-  @impl true
-  def handle_in("add_video", %{"url" => url}, socket) do
-    broadcast!(socket, "add_video", %{url: url})
-    {:noreply, assign(socket, video_url: url, playing: false, time: 0)}
+    {:noreply, socket}
   end
 
   # Add authorization logic here as required.
   defp authorized?(_payload) do
     true
+  end
+
+  defp get_video_state(room_id) do
+    case :ets.lookup(@ets_table, room_id) do
+      [{^room_id, video_state}] -> video_state
+      [] -> %{video_url: nil, playing: false, time: 0}
+    end
+  end
+
+  defp save_video_state(topic, state) do
+    :ets.insert(@ets_table, {topic, state})
   end
 end
