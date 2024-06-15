@@ -2,5 +2,5 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-@import "../node_modules/video.js/dist/video-js.min.css";
+@import "../vendor/video.js/video-js.css";
 /* This file is for your main application CSS */

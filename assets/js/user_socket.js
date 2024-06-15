@@ -1,6 +1,6 @@
 // Bring in Phoenix channels client library:
 import { Socket } from "phoenix"
-import videojs from 'video.js';
+import videojs from '../vendor/video.js/video';
 
 let socket = new Socket("/socket", { params: { token: window.userToken } })
 
