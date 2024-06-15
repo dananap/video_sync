@@ -4,13 +4,10 @@
     <h1 class="text-4xl font-bold mb-8 text-center">Watch Together</h1>
     <div class="bg-white rounded-lg shadow-lg p-6">
         <div class="aspect-w-16 aspect-h-9 mb-6">
-            <video id="videoPlayer" class="w-full h-full object-cover" controls>
-                <source src="" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+            <video id="videoPlayer" class="video-js" controls preload="auto" />
         </div>
         <form id="videoForm" class="flex items-center">
-            <input type="text" id="videoUrl" class="flex-grow border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter video URL">
+            <input type="url" id="videoUrl" class="flex-grow border border-gray-300 rounded-l-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter video URL" required>
             <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white rounded-r-md px-6 py-2">Add Video</button>
         </form>
     </div>
