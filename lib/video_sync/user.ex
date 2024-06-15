@@ -14,6 +14,6 @@ defmodule VideoSync.User do
   def changeset(user, attrs) do
     user
     |> cast(attrs, [:name, :ip, :room_id])
-    |> validate_required([:name, :ip, :room_id])
+    |> validate_required([:ip])
   end
 end

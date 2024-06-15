@@ -1,4 +1,5 @@
 defmodule VideoSyncWeb.RoomChannel do
+  alias VideoSync.Player
   alias VideoSync.Repo
   use VideoSyncWeb, :channel
 
@@ -17,6 +18,8 @@ defmodule VideoSyncWeb.RoomChannel do
     if authorized?(payload) do
       video_state = get_video_state(room_id)
       socket = assign(socket, %{url: video_state.url, playing: video_state.playing, time: video_state.time})
+      IO.inspect(socket)
+      Player.create_user(room_id, %{ip: socket.join_ref})
 
       send(self(), :after_join)
       {:ok, socket}

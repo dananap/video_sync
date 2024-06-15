@@ -4,9 +4,11 @@ defmodule VideoSync.Player do
   """
 
   import Ecto.Query, warn: false
+  alias Hex.API.User
   alias VideoSync.Repo
 
-  alias VideoSync.Player.Room
+  alias VideoSync.Room
+  alias VideoSync.User
 
   @doc """
   Returns the list of rooms.
@@ -37,6 +39,8 @@ defmodule VideoSync.Player do
   """
   def get_room!(id), do: Repo.get!(Room, id)
 
+  def get_user!(id), do: Repo.get!(User, id)
+
   @doc """
   Creates a room.
 
@@ -52,6 +56,13 @@ defmodule VideoSync.Player do
   def create_room(attrs \\ %{}) do
     %Room{}
     |> Room.changeset(attrs)
+    |> Repo.insert()
+  end
+
+
+  def create_user(attrs \\ %{}) do
+    %User{}
+    |> User.changeset(attrs)
     |> Repo.insert()
   end
 
@@ -71,6 +82,11 @@ defmodule VideoSync.Player do
     room
     |> Room.changeset(attrs)
     |> Repo.update()
+  end
+
+  def add_user_to_room(room, user) do
+    Ecto.build_assoc(room, :users, user)
+    |> Repo.insert()
   end
 
   @doc """
